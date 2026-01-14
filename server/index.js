@@ -29,19 +29,26 @@ app.use('/api/members', memberRoutes)
 app.use(express.static(join(__dirname, '../dist')))
 
 // Catch-all handler for SPA routing (must be absolutely last)
-// This serves index.html for all non-API routes
 app.use((req, res) => {
-  // Only handle non-API routes - API routes should have been matched above
+  console.log(`[CATCH-ALL] Request: ${req.method} ${req.path}, startsWith /api: ${req.path.startsWith('/api')}`)
+  
+  // Handle API routes that weren't matched
   if (req.path.startsWith('/api')) {
+    console.log(`[CATCH-ALL] Returning 404 for API route: ${req.path}`)
     return res.status(404).json({ error: 'Not found', message: `Route ${req.path} not found` })
   }
   
   // Serve the React app for all other routes
   const indexPath = join(__dirname, '../dist/index.html')
+  console.log(`[CATCH-ALL] Serving index.html from: ${indexPath}`)
+  console.log(`[CATCH-ALL] File exists: ${existsSync(indexPath)}`)
+  
   res.sendFile(indexPath, (err) => {
     if (err) {
-      console.error('Error sending index.html:', err)
-      res.status(500).json({ error: 'Internal server error', message: 'Failed to serve application' })
+      console.error('[CATCH-ALL] Error sending index.html:', err)
+      res.status(500).json({ error: 'Internal server error', message: 'Failed to serve application', details: err.message })
+    } else {
+      console.log(`[CATCH-ALL] Successfully served index.html for ${req.path}`)
     }
   })
 })
