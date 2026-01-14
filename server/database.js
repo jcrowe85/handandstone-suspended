@@ -81,14 +81,14 @@ export const initializeDatabase = async () => {
       for (const [username, locations] of Object.entries(locationMap)) {
         await dbRun(
           `INSERT INTO users (username, password, role, allowedLocations) VALUES (?, ?, ?, ?)`,
-          [username, 'kasey#1', 'location', JSON.stringify(locations)]
+          [username, 'handandstone', 'location', JSON.stringify(locations)]
         )
       }
       
       // Create admin user
       await dbRun(
         `INSERT INTO users (username, password, role, allowedLocations) VALUES (?, ?, ?, ?)`,
-        ['admin', 'kasey#1', 'admin', JSON.stringify(allLocations)]
+        ['admin', 'handandstone', 'admin', JSON.stringify(allLocations)]
       )
       
       console.log('Database initialized with default users')
