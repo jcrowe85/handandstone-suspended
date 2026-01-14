@@ -28,7 +28,8 @@ app.use('/api/members', memberRoutes)
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(join(__dirname, '../dist')))
   
-  app.get('*', (req, res) => {
+  // Catch-all handler for SPA routing (must be last)
+  app.use((req, res) => {
     res.sendFile(join(__dirname, '../dist/index.html'))
   })
 }
