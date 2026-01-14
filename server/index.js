@@ -2,6 +2,7 @@ import express from 'express'
 import cors from 'cors'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
+import { existsSync } from 'fs'
 import { initializeDatabase } from './database.js'
 import authRoutes from './routes/auth.js'
 import memberRoutes from './routes/members.js'
@@ -33,12 +34,18 @@ app.use((req, res, next) => {
   // Only handle non-API routes
   if (!req.path.startsWith('/api')) {
     const indexPath = join(__dirname, '../dist/index.html')
-    return res.sendFile(indexPath, (err) => {
+    console.log(`Serving index.html for path: ${req.path}, file: ${indexPath}`)
+    res.sendFile(indexPath, (err) => {
       if (err) {
         console.error('Error sending index.html:', err)
-        res.status(500).json({ error: 'Internal server error', message: 'Failed to serve application' })
+        console.error('File path:', indexPath)
+        console.error('File exists:', existsSync(indexPath))
+        res.status(500).json({ error: 'Internal server error', message: 'Failed to serve application', details: err.message })
+      } else {
+        console.log(`Successfully served index.html for ${req.path}`)
       }
     })
+    return // Explicitly return to prevent further middleware
   }
   // Pass API routes to next handler
   next()
