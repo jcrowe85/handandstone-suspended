@@ -27,24 +27,21 @@ app.use('/api/members', memberRoutes)
 // Serve static files
 app.use(express.static(join(__dirname, '../dist')))
 
-// 404 handler for unmatched API routes
+// 404 handler for unmatched API routes (must come before catch-all)
 app.use('/api', (req, res) => {
   res.status(404).json({ error: 'Not found', message: `Route ${req.path} not found` })
 })
 
 // Catch-all handler for SPA routing (must be absolutely last)
-// This catches all non-API routes and serves the React app
+// This serves index.html for all non-API routes
 app.use((req, res) => {
-  // Only handle non-API routes
-  if (!req.path.startsWith('/api')) {
-    const indexPath = join(__dirname, '../dist/index.html')
-    res.sendFile(indexPath, (err) => {
-      if (err) {
-        console.error('Error sending index.html:', err)
-        res.status(500).json({ error: 'Internal server error', message: 'Failed to serve application' })
-      }
-    })
-  }
+  const indexPath = join(__dirname, '../dist/index.html')
+  res.sendFile(indexPath, (err) => {
+    if (err) {
+      console.error('Error sending index.html:', err)
+      res.status(500).json({ error: 'Internal server error', message: 'Failed to serve application' })
+    }
+  })
 })
 
 app.listen(PORT, () => {
