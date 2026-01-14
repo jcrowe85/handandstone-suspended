@@ -27,16 +27,19 @@ app.use('/api/members', memberRoutes)
 // Serve static files in production
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(join(__dirname, '../dist')))
-  
-  // Catch-all handler for SPA routing (must be last, only for non-API routes)
-  app.use((req, res, next) => {
-    // Skip API routes
-    if (req.path.startsWith('/api')) {
-      return next()
-    }
-    res.sendFile(join(__dirname, '../dist/index.html'))
-  })
 }
+
+// Catch-all handler for SPA routing (must be last)
+// This will catch all routes that don't start with /api
+app.use((req, res) => {
+  if (!req.path.startsWith('/api')) {
+    if (process.env.NODE_ENV === 'production') {
+      return res.sendFile(join(__dirname, '../dist/index.html'))
+    }
+  }
+  // If it's an API route that wasn't matched, return 404
+  res.status(404).json({ error: 'Not found', message: `Route ${req.path} not found` })
+})
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
