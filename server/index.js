@@ -24,21 +24,18 @@ initializeDatabase()
 app.use('/api/auth', authRoutes)
 app.use('/api/members', memberRoutes)
 
-// Serve static files in production
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(join(__dirname, '../dist')))
-}
+// Serve static files
+app.use(express.static(join(__dirname, '../dist')))
 
 // Catch-all handler for SPA routing (must be last)
-// This will catch all routes that don't start with /api
-app.use((req, res) => {
-  if (!req.path.startsWith('/api')) {
-    if (process.env.NODE_ENV === 'production') {
-      return res.sendFile(join(__dirname, '../dist/index.html'))
-    }
+// This catches all routes that don't start with /api
+app.use((req, res, next) => {
+  // Skip API routes - let them return 404 if not matched
+  if (req.path.startsWith('/api')) {
+    return res.status(404).json({ error: 'Not found', message: `Route ${req.path} not found` })
   }
-  // If it's an API route that wasn't matched, return 404
-  res.status(404).json({ error: 'Not found', message: `Route ${req.path} not found` })
+  // For all other routes, serve the SPA
+  res.sendFile(join(__dirname, '../dist/index.html'))
 })
 
 app.listen(PORT, () => {
