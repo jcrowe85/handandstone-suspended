@@ -20,22 +20,27 @@ app.use(express.urlencoded({ extended: true }))
 // Initialize database
 initializeDatabase()
 
-// API Routes
+// API Routes (must come before static files)
 app.use('/api/auth', authRoutes)
 app.use('/api/members', memberRoutes)
 
-// Serve static files
-app.use(express.static(join(__dirname, '../dist')))
+// Serve static files (but don't handle 404s - let catch-all do it)
+app.use(express.static(join(__dirname, '../dist'), { fallthrough: true }))
 
-// Catch-all handler for SPA routing (must be last)
-// This catches all routes that don't start with /api
-app.use((req, res, next) => {
-  // Skip API routes - let them return 404 if not matched
+// Catch-all handler for SPA routing (must be absolutely last)
+app.use((req, res) => {
+  // Skip API routes - they should have been handled above
   if (req.path.startsWith('/api')) {
     return res.status(404).json({ error: 'Not found', message: `Route ${req.path} not found` })
   }
-  // For all other routes, serve the SPA
-  res.sendFile(join(__dirname, '../dist/index.html'))
+  // For all other routes, serve the SPA index.html
+  const indexPath = join(__dirname, '../dist/index.html')
+  res.sendFile(indexPath, (err) => {
+    if (err) {
+      console.error('Error sending index.html:', err)
+      res.status(500).json({ error: 'Internal server error', message: 'Failed to serve application' })
+    }
+  })
 })
 
 app.listen(PORT, () => {
